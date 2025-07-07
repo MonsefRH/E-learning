@@ -75,6 +75,7 @@ export function AppSidebar() {
 
   const handleLogout = () => {
     logout();
+    navigate("/")
   };
 
   return (

@@ -6,7 +6,6 @@ import logging
 
 router = APIRouter(prefix="/audio", tags=["audio"])
 
-# Initialize Whisper model (loaded once for efficiency)
 whisper_model = whisper.load_model("base")  # Use "small" or "medium" for better accuracy
 
 # Set up logging

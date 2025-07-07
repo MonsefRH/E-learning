@@ -1,5 +1,8 @@
+from datetime import datetime
 from sqlalchemy import Column, Integer, String
 from app.configs.db import Base
+from sqlalchemy.sql.sqltypes import DateTime
+
 
 class User(Base):
     __tablename__ = "users"
@@ -8,3 +11,4 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     role = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=True)

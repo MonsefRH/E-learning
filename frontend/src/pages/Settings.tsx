@@ -10,6 +10,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { User, Mail, Shield, LogOut } from "lucide-react";
+import {redirect, useNavigate} from "react-router-dom";
+import userService from "@/lib/services/userService.ts";
+import {authService} from "@/lib/services/authService.ts";
 
 interface SettingsFormData {
   username: string;
@@ -22,6 +25,7 @@ interface SettingsFormData {
 const Settings = () => {
   const { user, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<SettingsFormData>({
     defaultValues: {
@@ -44,9 +48,26 @@ const Settings = () => {
     }
 
     try {
-      // Simulate API call to update user information
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      const updatedData = {
+        username: data.username,
+        email: data.email,
+        ...(data.currentPassword && data.newPassword ? {
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword
+        } : {})
+      };
+
+
+      await userService.changePassword(updatedData.currentPassword, updatedData.newPassword);
+      await userService.updateUserInfo(updatedData.username, updatedData.email);
+
+      user.username = updatedData.username;
+      user.email = updatedData.email;
+
+
+
+
       toast.success("Settings updated successfully!");
       
       // Clear password fields
@@ -62,6 +83,7 @@ const Settings = () => {
 
   const handleLogout = () => {
     logout();
+    navigate("/")
     toast.success("Logged out successfully");
   };
 

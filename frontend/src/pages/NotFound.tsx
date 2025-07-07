@@ -1,8 +1,11 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import {useAuth} from "@/hooks/useAuth.tsx";
 
 const NotFound = () => {
   const location = useLocation();
+  const { logout } = useAuth();
+
 
   useEffect(() => {
     console.error(
@@ -10,6 +13,12 @@ const NotFound = () => {
       location.pathname
     );
   }, [location.pathname]);
+
+
+  const handleLogout = () => {
+      logout();
+      window.location.href = "/";
+    };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -19,6 +28,15 @@ const NotFound = () => {
         <a href="/" className="text-blue-500 hover:text-blue-700 underline">
           Return to Home
         </a>
+
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          >
+            Logout
+          </button>
+
+
       </div>
     </div>
   );

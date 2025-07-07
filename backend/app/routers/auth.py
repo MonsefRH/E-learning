@@ -10,6 +10,7 @@ from app.services.user_service import get_user_by_username, create_user
 from app.schemas.user import UserCreate, UserResponse
 from passlib.context import CryptContext
 
+
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
@@ -29,6 +30,9 @@ def create_access_token(data: dict):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
@@ -56,4 +60,35 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
     access_token = create_access_token(data={"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token,"user": {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": user.role
+    }, "token_type": "bearer"}
+
+@router.post("/refresh")
+async def refresh_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    user = get_user_by_username(db, username)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+    new_access_token = create_access_token(data={"sub": user.username})
+    return {"access_token": new_access_token,"user": {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": user.role
+    }, "token_type": "bearer"}
+
+
+
+

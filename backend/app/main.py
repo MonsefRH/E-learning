@@ -1,14 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, courses, slides, exercices, lessons , audio
+from app.routers import auth, courses, slides, exercices, lessons , audio, user
 from app.configs.db import init_db
+
+
 
 app = FastAPI(title="AI-Powered E-Learning Platform Backend")
 
 # CORS configuration to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Adjust to your frontend URL
+    allow_origins=["http://localhost:8081"],  # Adjust to your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,6 +26,7 @@ app.include_router(slides.router)
 app.include_router(exercices.router)
 app.include_router(lessons.router)
 app.include_router(audio.router)
+app.include_router(user.router)
 
 @app.get("/")
 async def root():
