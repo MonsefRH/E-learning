@@ -12,3 +12,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     model_config = ConfigDict(from_attributes=True)  # Pydantic V2 syntax
+
+
+class LearnerCreate(UserCreate):
+    level: str

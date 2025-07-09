@@ -10,6 +10,7 @@ import CourseView from "./pages/CourseView";
 import CourseEditor from "./components/course/CourseEditor";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import UserManagement from "@/components/management/UserManagement";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Index />} />
+            <Route path="/users" element={<UserManagement/>}/>
             <Route path="/course/:courseId" element={<CourseView />} />
             <Route path="/course/:courseId/edit" element={<CourseEditor />} />
             <Route path="/course/new/edit" element={<CourseEditor />} />

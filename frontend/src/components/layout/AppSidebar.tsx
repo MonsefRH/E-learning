@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -35,8 +34,8 @@ export function AppSidebar() {
 
   const managerItems = [
     { title: "Dashboard", url: "/dashboard", icon: Home },
-    { title: "Users", url: "/users", icon: Users },
     { title: "Courses", url: "/courses", icon: BookOpen },
+    { title: "Users", url: "/users", icon: Users },
     { title: "Analytics", url: "/analytics", icon: BarChart3 },
     { title: "Settings", url: "/settings", icon: Settings },
   ];
@@ -46,7 +45,6 @@ export function AppSidebar() {
     { title: "My Courses", url: "/courses", icon: BookOpen },
     { title: "Create Course", url: "/create-course", icon: PlusCircle },
     { title: "Content Library", url: "/library", icon: Library },
-    { title: "Students", url: "/students", icon: Users },
     { title: "Analytics", url: "/analytics", icon: BarChart3 },
     { title: "Settings", url: "/settings", icon: Settings },
   ];

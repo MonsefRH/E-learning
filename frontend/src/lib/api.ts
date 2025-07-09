@@ -1,7 +1,6 @@
-// src/lib/api.ts
 import axios from 'axios';
 
-export const API_URL = 'http://localhost:8000'; // Adjust based on your backend URL
+export const API_URL = 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -10,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Add auth interceptor
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {

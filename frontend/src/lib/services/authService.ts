@@ -2,11 +2,7 @@
 import api from '../api';
 import {User} from "@/hooks/useAuth.tsx";
 
-export interface RegisterInput {
-  username: string;
-  email: string;
-  password: string;
-}
+
 
 export interface LoginInput {
   username: string;
@@ -27,10 +23,7 @@ export interface UserData {
 }
 
 export const authService = {
-  register: async (userData: RegisterInput): Promise<UserData> => {
-    const response = await api.post('/auth/register', userData);
-    return response.data;
-  },
+
 
   login: async (credentials: LoginInput): Promise<AuthResponse> => {
     // For login with OAuth2PasswordRequestForm, we need to send form data

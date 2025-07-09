@@ -4,6 +4,11 @@ from pydantic import BaseModel
 from app.configs.db import get_db
 from app.models.user import User
 from .auth import get_current_user, verify_password, pwd_context, create_access_token
+from app.services.user_service import get_user_by_username, create_user, get_all_users, delete_user
+
+from ..models.learner import Learner
+from ..schemas.user import UserCreate, LearnerCreate
+from ..services.user_service import create_learner
 
 router = APIRouter(
     prefix="/users",
@@ -18,6 +23,17 @@ class ChangePasswordRequest(BaseModel):
 class UpdateUserRequest(BaseModel):
     username: str = None
     email: str = None
+
+
+class UpdateUserReq(BaseModel):
+    id: int = None
+    username: str = None
+    email: str = None
+    level: str = None
+
+
+
+
 
 @router.put("/change-password")
 async def change_password(
@@ -45,8 +61,9 @@ async def change_password(
 
     return response
 
-@router.put("/update")
-async def update_user(
+
+@router.put("/update-account")
+async def update_my_account(
         request: UpdateUserRequest,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
@@ -84,6 +101,7 @@ async def update_user(
             )
         current_user.email = request.email
 
+
     db.commit()
     db.refresh(current_user)
 
@@ -101,4 +119,148 @@ async def update_user(
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+
+
+
+@router.put("/update")
+async def update_user(
+        request: UpdateUserReq,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "manager":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource"
+        )
+
+    user = db.query(User).filter(User.id == request.id).first()
+    learner = db.query(Learner).filter(Learner.id == request.id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Vérifier l'unicité de l'username si fourni
+    if request.username:
+        existing_user = db.query(User).filter(
+            User.username == request.username,
+            User.id != user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Username already exists"
+            )
+        user.username = request.username
+
+    # Vérifier l'unicité de l'email si fourni
+    if request.email:
+        existing_user = db.query(User).filter(
+            User.email == request.email,
+            User.id != user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already exists"
+            )
+        user.email = request.email
+
+    # Mettre à jour le niveau si fourni
+    if request.level:
+        learner.level = request.level
+
+    db.commit()
+    db.refresh(user)
+    db.refresh(learner)
+
+    return {
+        "message": "User updated successfully",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "level": learner.level
+        }
+    }
+
+
+
+
+@router.get("/get-all")
+async def list_all_users(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "manager":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource"
+        )
+
+    users = get_all_users(db)
+    return users
+
+
+
+@router.post("/create")
+async def create_user_endpoint(
+        request: LearnerCreate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "manager":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource"
+        )
+    user = get_user_by_username(db, request.username)
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists"
+        )
+    if not request.level :
+        new_user = create_user(db, request)
+        return {
+            "message": "User created successfully",
+            "user": {
+                "id": new_user.id,
+                "username": new_user.username,
+                "email": new_user.email,
+                "role": new_user.role
+            }
+        }
+    else :
+        new_user = create_learner(db, request)
+        return {
+            "message": "User created successfully",
+            "user": {
+                "id": new_user.id,
+                "username": new_user.username,
+                "email": new_user.email,
+                "role": new_user.role,
+                "level": new_user.level
+            }
+        }
+
+@router.delete("/delete/{user_id}")
+async def deleteUser(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "manager":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource"
+        )
+
+    delete_user(db, user_id)
+
+    return {"message": "User deleted successfully"}
 
