@@ -50,6 +50,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 @router.post("/register", response_model=UserResponse)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = get_user_by_username(db, user.username)
+    print(db_user)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     return create_user(db, user)
@@ -91,6 +92,11 @@ async def refresh_token(token: str = Depends(oauth2_scheme), db: Session = Depen
         "role": user.role
     }, "token_type": "bearer"}
 
-
-
-
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_details(current_user=Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "role": current_user.role
+    }

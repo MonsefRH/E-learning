@@ -34,12 +34,17 @@ class UpdateUserReq(BaseModel):
 
 
 
+def ensure_admin(current_user: User = Depends(get_current_user)):
+    if current_user.role != "manager":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user
 
 @router.put("/change-password")
 async def change_password(
         request: ChangePasswordRequest,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        _=Depends(ensure_admin)
 ):
     if not verify_password(request.current_password, current_user.password_hash):
         raise HTTPException(
@@ -66,7 +71,8 @@ async def change_password(
 async def update_my_account(
         request: UpdateUserRequest,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        _=Depends(ensure_admin)
 ):
     # Vérifier qu'au moins un champ est fourni
     if not request.username and not request.email:
@@ -127,14 +133,9 @@ async def update_my_account(
 async def update_user(
         request: UpdateUserReq,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        _=Depends(ensure_admin)
 ):
-    if current_user.role != "manager":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource"
-        )
-
     user = db.query(User).filter(User.id == request.id).first()
     learner = db.query(Learner).filter(Learner.id == request.id).first()
     if not user:
@@ -194,14 +195,9 @@ async def update_user(
 @router.get("/get-all")
 async def list_all_users(
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        _=Depends(ensure_admin)
 ):
-    if current_user.role != "manager":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource"
-        )
-
     users = get_all_users(db)
     return users
 
@@ -211,13 +207,8 @@ async def list_all_users(
 async def create_user_endpoint(
         request: LearnerCreate,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        _=Depends(ensure_admin)
 ):
-    if current_user.role != "manager":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource"
-        )
     user = get_user_by_username(db, request.username)
     if user:
         raise HTTPException(
@@ -252,15 +243,8 @@ async def create_user_endpoint(
 async def deleteUser(
         user_id: int,
         db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        _=Depends(ensure_admin)
 ):
-    if current_user.role != "manager":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource"
-        )
-
     delete_user(db, user_id)
-
     return {"message": "User deleted successfully"}
 

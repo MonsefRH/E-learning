@@ -34,7 +34,7 @@ export function AppSidebar() {
 
   const managerItems = [
     { title: "Dashboard", url: "/dashboard", icon: Home },
-    { title: "Courses", url: "/courses", icon: BookOpen },
+    { title: "Courses", url: "/admin/courses", icon: BookOpen },
     { title: "Users", url: "/users", icon: Users },
     { title: "Analytics", url: "/analytics", icon: BarChart3 },
     { title: "Settings", url: "/settings", icon: Settings },

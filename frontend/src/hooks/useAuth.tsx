@@ -1,10 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import {authService, LoginInput, UserData} from "../lib/services/authService";
+import { authService, LoginInput } from "../lib/services/authService";
 import api from "../lib/api";
-import { jwtDecode } from "jwt-decode";
 
 export interface User {
-  id: string;
+  id: number; // Changed from string to number to match backend
   username: string;
   role: "manager" | "trainer" | "learner";
   email: string;
@@ -15,6 +14,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  refreshUser: () => Promise<void>; // Added to refresh user data
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,14 +31,6 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-interface TokenPayload {
-  sub: string;
-  username: string;
-  email: string;
-  role: "manager" | "trainer" | "learner";
-  exp: number;
-}
-
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,14 +38,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Setup axios interceptor for authentication
   useEffect(() => {
     const interceptor = api.interceptors.request.use(
-        (config) => {
-          const token = localStorage.getItem("token");
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-          }
-          return config;
-        },
-        (error) => Promise.reject(error)
+      (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
     );
 
     return () => {
@@ -61,47 +53,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, []);
 
+  // Fetch user details on mount
   useEffect(() => {
-    // Check for stored token and decode user information
-    const token = localStorage.getItem("token");
-    if (token) {
+    const fetchUser = async () => {
       try {
-        const decoded = jwtDecode<TokenPayload>(token);
-
-        // Check if token is expired
-        if (decoded.exp * 1000 < Date.now()) {
-          localStorage.removeItem("token");
-          setUser(null);
-        } else {
-          setUser({
-            id: decoded.sub,
-            username: decoded.username,
-            email: decoded.email,
-            role: decoded.role
-          });
+        const token = localStorage.getItem("token");
+        if (token) {
+          const userData = await authService.getCurrentUser();
+          console.log("Fetched user:", userData);
+          setUser(userData);
         }
       } catch (error) {
-        console.error("Failed to decode token:", error);
+        console.error("Failed to fetch user:", error);
         localStorage.removeItem("token");
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    };
+
+    fetchUser();
   }, []);
 
   const login = async (username: string, password: string) => {
     try {
       const credentials: LoginInput = { username, password };
       const response = await authService.login(credentials);
-
-      // Token is automatically saved by authService
-      // Now decode the token to get user information
-      const token = response.access_token;
-
-      const userData: User = response.user;
-
-      console.log("Login successful:", userData);
-
-      setUser(userData);
+      console.log("Login response:", response);
+      setUser(response.user);
     } catch (error) {
       console.error("Login failed:", error);
       throw new Error("Invalid credentials");
@@ -113,11 +92,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(null);
   };
 
-
+  // Function to refresh user data (used in NotFound)
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const userData = await authService.getCurrentUser();
+        console.log("Refreshed user:", userData);
+        setUser(userData);
+      } else {
+        setUser(null);
+      }
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
+      localStorage.removeItem("token");
+      setUser(null);
+    }
+  };
 
   return (
-      <AuthContext.Provider value={{ user, login, logout, isLoading }}>
-        {children}
-      </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, login, logout, isLoading, refreshUser }}>
+      {children}
+    </AuthContext.Provider>
   );
 };

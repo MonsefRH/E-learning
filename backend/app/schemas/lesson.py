@@ -1,14 +1,21 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+from typing import Optional
 
 class LessonBase(BaseModel):
     title: str
-    duration: str | None
-    completed: bool = False
+    description: str
+    course_id: int
 
 class LessonCreate(LessonBase):
-    course_id: int
+    pass
+
+class LessonUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    course_id: Optional[int] = None
 
 class LessonResponse(LessonBase):
     id: int
-    course_id: int
-    model_config = ConfigDict(from_attributes=True)  # Pydantic V2 syntax
+
+    class Config:
+        from_attributes = True

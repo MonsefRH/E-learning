@@ -1,16 +1,16 @@
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, func
+from sqlalchemy import Column, String, ForeignKey, Boolean, DateTime, Integer
+from sqlalchemy.orm import relationship
 from app.configs.db import Base
 
 class Course(Base):
     __tablename__ = "courses"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True,index=True)
     title = Column(String, nullable=False)
-    description = Column(Text)
-    instructor = Column(String)
-    duration = Column(String)
-    total_slides = Column(Integer)
-    category = Column(String)
-    level = Column(String)
-    students = Column(Integer, default=0)
-    rating = Column(Float, default=0.0)
-    created_at = Column(DateTime, default=func.now())
+    description = Column(String, nullable=False)
+    teacher_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    is_active = Column(Boolean, default=False)
+    deadline = Column(DateTime, nullable=True)
+    teacher = relationship("User", back_populates="courses")
+    category = relationship("Category", back_populates="courses")
+    lessons = relationship("Lesson", back_populates="course", cascade="all, delete-orphan")

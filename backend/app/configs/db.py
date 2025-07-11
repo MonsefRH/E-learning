@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://myuser:mypassword@localhost:5432/elearning")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:MYPOSTGRESQL@localhost:5432/elearning")
+print(DATABASE_URL)
 
 engine = create_engine(DATABASE_URL,    connect_args={"options": "-c client_encoding=utf8"})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

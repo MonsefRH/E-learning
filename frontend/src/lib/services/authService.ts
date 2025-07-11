@@ -55,5 +55,9 @@ export const authService = {
     return localStorage.getItem('token') !== null;
   },
 
+  getCurrentUser: async (): Promise<User> => {
+    const response = await api.get("/auth/me");
+    return response.data;
+  },
 
 };
