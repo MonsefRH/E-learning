@@ -82,7 +82,6 @@ const CourseView = () => {
                 <AvatarPresentation
                   courseId={courseId || "1"}
                   courseTitle={course.title}
-                  slides={slides}
                   onComplete={handleCourseComplete}
                 />
               </TabsContent>
