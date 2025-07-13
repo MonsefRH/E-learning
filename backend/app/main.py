@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, courses, slides, exercices,lessons ,categories ,audio, user
+from app.routers import auth, courses, slides,lessons ,categories ,audio, user
 from app.configs.db import init_db
 from app.models.user import User
 from app.models.category import Category
@@ -34,7 +34,6 @@ init_db()
 app.include_router(auth.router)
 app.include_router(courses.router)
 app.include_router(slides.router)
-app.include_router(exercices.router)
 app.include_router(lessons.router)
 app.include_router(audio.router)
 app.include_router(user.router)

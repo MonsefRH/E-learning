@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, MessageCircle } from "lucide-react";
+import {contentService} from "@/lib/services/contentService.ts";
 
 interface Slide {
     id: number;
@@ -248,22 +249,15 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
 
             try {
                 const slideNumber = currentSlide + 1;
-                const url = `http://localhost:8000/slides/api/presentations/${courseId}/slide/${slideNumber}`;
 
-                const htmlResponse = await fetch(url);
-
-                if (htmlResponse.ok) {
-                    const html = await htmlResponse.text();
-                    setCurrentSlideHtml(html);
-                } else {
-                    console.error(`Failed to load HTML for slide ${slideNumber}`);
-                    setCurrentSlideHtml("");
-                }
+                const html = await contentService.getSlideHtml(courseId, slideNumber);
+                setCurrentSlideHtml(html);
             } catch (error) {
                 console.error('Error loading slide HTML:', error);
                 setCurrentSlideHtml("");
             }
         };
+
 
         loadSlideHtml();
     }, [courseId, currentSlide, slides.length]);

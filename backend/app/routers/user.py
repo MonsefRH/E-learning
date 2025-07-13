@@ -198,8 +198,28 @@ async def list_all_users(
         current_user: User = Depends(get_current_user),
         _=Depends(ensure_admin)
 ):
-    users = get_all_users(db)
-    return users
+    users = db.query(User).all()
+    result = []
+
+    for user in users:
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "created_at" : user.created_at,
+        }
+
+        # Add level if user is a learner
+        if user.role == "learner":
+            learner = db.query(Learner).filter(Learner.id == user.id).first()
+            if learner:
+                user_data["level"] = learner.level
+
+        result.append(user_data)
+
+
+    return result
 
 
 

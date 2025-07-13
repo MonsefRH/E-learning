@@ -97,9 +97,9 @@ const UserManagement = () => {
       try {
         setIsLoading(true);
         const fetchedUsers = await userService.getAllUsers();
-        console.log("Fetched users:", fetchedUsers);
         setUsers(fetchedUsers);
         setFilteredUsers(fetchedUsers);
+        console.log("Fetched users:", fetchedUsers);
       } catch (error) {
         console.error("Failed to fetch users:", error);
       } finally {
@@ -482,8 +482,12 @@ const UserManagement = () => {
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select
-                value={newUser.role}
-                onValueChange={(value) => setNewUser({...newUser, role: value})}
+                  value={newUser.role}
+                  onValueChange={(value) => setNewUser({
+                    ...newUser,
+                    role: value,
+                    level: value === "learner" ? newUser.level || "beginner" : ""
+                  })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a role" />
@@ -496,22 +500,22 @@ const UserManagement = () => {
               </Select>
             </div>
             {newUser.role === "learner" && (
-              <div className="space-y-2">
-                <Label htmlFor="level">Level</Label>
-                <Select
-                  value={newUser.level}
-                  onValueChange={(value) => setNewUser({...newUser, level: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="level">Level</Label>
+                  <Select
+                      value={newUser.level}
+                      onValueChange={(value) => setNewUser({...newUser, level: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
             )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsAddUserDialogOpen(false)}>
