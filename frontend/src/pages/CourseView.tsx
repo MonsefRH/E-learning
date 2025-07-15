@@ -1,8 +1,9 @@
+// pages/CourseView.tsx
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { AudioCapture } from "@/components/audio/AudioCapture";
+import { Chatbot } from "@/components/chatbot/Chatbot.tsx";
 import AvatarPresentation from "@/components/presentation/AvatarPresentation";
 import CourseExercises from "@/components/course/CourseExercises";
 import CourseHeader from "@/components/course/CourseHeader";
@@ -11,6 +12,7 @@ import CourseLessons from "@/components/course/CourseLessons";
 import CourseResources from "@/components/course/CourseResources";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 const CourseView = () => {
   const { courseId } = useParams();
@@ -18,8 +20,9 @@ const CourseView = () => {
   const { toast } = useToast();
 
   const [courseProgress, setCourseProgress] = useState(45);
+  const [qaHistory, setQaHistory] = useState<string[]>([]);
+  const [showFullHistory, setShowFullHistory] = useState(false);
 
-  // Mock course data
   const course = {
     id: courseId,
     title: "Introduction to Machine Learning",
@@ -39,57 +42,37 @@ const CourseView = () => {
     ],
   };
 
-  // Mock slides data for AvatarPresentation
-  const slides = [
-    {
-      id: 1,
-      title: "What is Machine Learning?",
-      content: "Machine Learning is a subset of Artificial Intelligence that enables computers to learn and make decisions from data without being explicitly programmed.",
-      duration: 60,
-      avatarScript: "Welcome to our course on Machine Learning! Today we'll explore what machine learning is and how it's revolutionizing technology.",
-    },
-    // ... other slides
-  ];
-
   const handleCourseComplete = () => {
     setCourseProgress(100);
-    toast({
-      title: "Course completed!",
-      description: "Congratulations on completing the course!",
-    });
+    toast({ title: "Course Completed", description: "Congratulations on completing the course!" });
   };
 
-  const breadcrumbs = [
-    { label: "Courses", href: "/courses" },
-    { label: course.title },
-  ];
+  const handleQaResponse = (response: string) => {
+    setQaHistory((prev) => [response, ...prev].slice(0, 10));
+  };
+
+  const MAX_HISTORY_LENGTH = 200;
+  const getTruncatedText = (text: string) => text.length <= MAX_HISTORY_LENGTH ? text : text.slice(0, MAX_HISTORY_LENGTH - 3) + "...";
 
   return (
-    <DashboardLayout title={course.title} breadcrumbs={breadcrumbs}>
+    <DashboardLayout title={course.title} breadcrumbs={[{ label: "Courses", href: "/courses" }, { label: course.title }]}>
       <div className="space-y-6">
         <CourseHeader course={course} courseProgress={courseProgress} />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-6">
-            <Tabs defaultValue="presentation" className="space-y-4">
+            <Tabs defaultValue="presentation">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="presentation">Presentation</TabsTrigger>
                 <TabsTrigger value="exercises">Exercises</TabsTrigger>
                 <TabsTrigger value="resources">Resources</TabsTrigger>
               </TabsList>
-
               <TabsContent value="presentation">
-                <AvatarPresentation
-                  courseId={courseId || "1"}
-                  courseTitle={course.title}
-                  onComplete={handleCourseComplete}
-                />
+                <AvatarPresentation courseId={courseId || "1"} courseTitle={course.title} onComplete={handleCourseComplete} />
               </TabsContent>
-
               <TabsContent value="exercises">
                 <CourseExercises courseId={courseId || "1"} />
               </TabsContent>
-
               <TabsContent value="resources">
                 <CourseResources />
               </TabsContent>
@@ -97,9 +80,44 @@ const CourseView = () => {
           </div>
 
           <div className="space-y-6">
-            {user?.role === "learner" && <AudioCapture />}
             <CourseLessons lessons={course.lessons} />
             <CourseStats courseProgress={courseProgress} />
+
+            {/* Embedded AI Chat Assistant */}
+            {user?.role === "learner" && (
+              <Chatbot
+                courseId={courseId}
+                onResponse={handleQaResponse}
+                size="lg"
+                embedded={true}
+              />
+            )}
+
+            {/* Q/A History moved below chat */}
+            {qaHistory.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Q/A History</h3>
+                <p className="text-sm text-muted-foreground">
+                  {qaHistory.length > 3 ? `Showing ${showFullHistory ? qaHistory.length : 3} of ${qaHistory.length}` : "Recent interactions"}
+                </p>
+                {qaHistory
+                  .slice(0, showFullHistory ? qaHistory.length : 3)
+                  .map((item, index) => (
+                    <div key={index} className="p-2 bg-muted rounded-lg border">
+                      <p className="text-sm break-words">{getTruncatedText(item)}</p>
+                    </div>
+                  ))}
+                {qaHistory.length > 3 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFullHistory(!showFullHistory)}
+                  >
+                    {showFullHistory ? "Show Less" : "Show Full History"}
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

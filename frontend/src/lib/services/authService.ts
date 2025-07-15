@@ -37,6 +37,7 @@ export const authService = {
       }
     });
 
+
     // Store the token in localStorage for future authenticated requests
     if (response.data.access_token) {
       localStorage.setItem('token', response.data.access_token);

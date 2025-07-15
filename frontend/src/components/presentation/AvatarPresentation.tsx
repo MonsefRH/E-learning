@@ -83,7 +83,7 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
         loadPresentationData();
     }, [courseId]);
 
-    // Initialize audio element
+    // Initialize chatbot element
     useEffect(() => {
         if (!audioRef.current) {
             audioRef.current = new Audio();
@@ -125,7 +125,7 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
                 if (currentSlide < slides.length - 1) {
                     setCurrentSlide(prev => prev + 1);
                     setProgress(0);
-                    // Auto-play next slide after a brief delay to allow audio loading
+                    // Auto-play next slide after a brief delay to allow chatbot loading
                     setTimeout(() => {
                         if (audioRef.current && !audioError && !audioLoading) {
                             audioRef.current.play().catch(error => {
@@ -182,8 +182,8 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
         };
     }, [currentSlide, slides.length, volume, isMuted, onComplete]);
 
-    // Load audio for current slide
-    // Load audio for current slide
+    // Load chatbot for current slide
+    // Load chatbot for current slide
     useEffect(() => {
         const loadSlideAudio = async () => {
             if (slides.length === 0 || !audioRef.current) return;
@@ -194,22 +194,22 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
 
                 const slideNumber = currentSlide + 1;
                 const audioUrl = `http://localhost:8000/slides/api/presentations/${courseId}/audio/${slideNumber}`;
-                console.log('Loading audio from:', audioUrl);
+                console.log('Loading chatbot from:', audioUrl);
 
                 // Clean up previous blob URL if it exists
                 if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
                     URL.revokeObjectURL(audioRef.current.src);
                 }
 
-                // Set the audio source directly to the API endpoint
+                // Set the chatbot source directly to the API endpoint
                 audioRef.current.src = audioUrl;
 
-                // Preload the audio
+                // Preload the chatbot
                 audioRef.current.load();
 
                 console.log('Audio URL set for slide', slideNumber);
             } catch (error) {
-                console.error('Error setting audio source:', error);
+                console.error('Error setting chatbot source:', error);
                 setAudioError(true);
                 setAudioLoading(false);
             }
@@ -218,7 +218,7 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
         // Reset progress when slide changes
         setProgress(0);
 
-        // Stop current audio if playing
+        // Stop current chatbot if playing
         if (audioRef.current && !audioRef.current.paused) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -234,7 +234,7 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
         };
     }, [courseId, currentSlide, slides.length]);
 
-    // Update audio volume and mute state
+    // Update chatbot volume and mute state
     useEffect(() => {
         if (audioRef.current) {
             audioRef.current.volume = volume;
@@ -315,9 +315,9 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
 
     const currentSlideData = slides[currentSlide];
 
-    // Get audio status for display
+    // Get chatbot status for display
     const getAudioStatus = () => {
-        if (audioLoading) return { text: "Loading audio...", color: "text-yellow-600", icon: "⏳" };
+        if (audioLoading) return { text: "Loading chatbot...", color: "text-yellow-600", icon: "⏳" };
         if (audioError) return { text: "Audio unavailable", color: "text-red-500", icon: "⚠" };
         return { text: "Audio ready", color: "text-green-600", icon: "🔊" };
     };
@@ -347,7 +347,7 @@ const AvatarPresentation = ({ courseId, courseTitle, onComplete }: AvatarPresent
                                 <p className="text-muted-foreground">
                                     Slide {currentSlide + 1} of {slides.length}
                                     {audioError && " • Audio unavailable"}
-                                    {audioLoading && " • Loading audio..."}
+                                    {audioLoading && " • Loading chatbot..."}
                                 </p>
                             </div>
                             <Badge variant="outline">AI Avatar Presentation</Badge>

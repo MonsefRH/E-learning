@@ -11,10 +11,6 @@ from app.models.course import Course
 
 router = APIRouter(prefix="/admin/courses", tags=["admin_courses"])
 
-# Add this debug code right after the imports
-print(f"CourseCreate fields: {CourseCreate.__fields__}")
-print(f"CourseCreate module: {CourseCreate.__module__}")
-print(f"CourseBase fields: {CourseCreate.__bases__[0].__fields__ if CourseCreate.__bases__ else 'No base'}")
 
 def ensure_admin(current_user: User = Depends(get_current_user)):
     if current_user.role != "manager":
