@@ -83,7 +83,7 @@ class QAService:
         self.manager = ConnectionManager()
         self.speech_service = SpeechToTextService()
         self.tts_service = TTSService()
-        api_key = os.getenv("GOOGLE_API_KEY", "AIzaSyC7_NPLgfg9FIZ0MvYQ2sN2TeUj7Y-0cAI")
+        api_key = os.getenv("GOOGLE_API_KEY")
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash')
         self.authenticated = {}  # Store authenticated WebSocket connections
