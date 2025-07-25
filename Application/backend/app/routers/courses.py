@@ -6,11 +6,9 @@ from app.models.user import User
 from app.schemas.course import CourseCreate, CourseResponse, CourseUpdate
 from app.services.course_service import create_course, update_course, delete_course, activate_course, get_course_by_id
 from typing import List
-
 from app.models.course import Course
 
 router = APIRouter(prefix="/admin/courses", tags=["admin_courses"])
-
 
 def ensure_admin(current_user: User = Depends(get_current_user)):
     if current_user.role != "manager":
@@ -24,7 +22,7 @@ def create_new_course(course: CourseCreate, db: Session = Depends(get_db), _=Dep
     return create_course(db, course)
 
 @router.get("/", response_model=List[CourseResponse])
-def list_courses(db: Session = Depends(get_db), _=Depends(ensure_admin)):
+def list_courses(db: Session = Depends(get_db)):
     return db.query(Course).all()
 
 @router.get("/{course_id}", response_model=CourseResponse)
